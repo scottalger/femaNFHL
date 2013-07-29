@@ -3,10 +3,10 @@
 library(foreign)
 
 # function to change FEMA flood zone descriptor names to concise ones
-# high risk (A and V = 100)
-# moderate risk (B and SHX = 200)
-# low risk (C and X = 400)
-# unknown risk (D = 400)
+# high risk (A and V = 1)
+# moderate risk (B and SHX = 4)
+# low risk (C and X = 7)
+# unknown risk (D = 9)
 FnRenameFloodZones <- function(x) {
   if (x %in% c("A", 
                "AE", 
@@ -24,14 +24,14 @@ FnRenameFloodZones <- function(x) {
     return ("1")
     
   } else if (x %in% c("B", 
-                      "SHX")) {
+                      "SHX",
+                      "0.2 PCT ANNUAL CHANCE FLOOD HAZARD",
+                      "0.2 PCT ANNUAL CHANCE FLOOD HAZARD CONTAINED IN CHANNEL",
+                      "0.2 PCT CHA")) {
     return ("4")
     
   } else if (x %in% c("C", 
                       "X", 
-                      "0.2 PCT ANNUAL CHANCE FLOOD HAZARD",
-                      "0.2 PCT ANNUAL CHANCE FLOOD HAZARD CONTAINED IN CHANNEL",
-                      "0.2 PCT CHA", 
                       "X PROTECTED BY LEVEE")) {
     return ("7")
     
@@ -92,8 +92,9 @@ for (eachDir in dataDirs) {
                          
     # rename flood zones
     #   levels(factor(inputDbf$FLD_ZONE, exclude = NULL))
-    inputDbf$FLD_ZONE <- sapply(inputDbf$FLD_ZONE, FnRenameFloodZones)
-  
+    # inputDbf$FLD_ZONE <- sapply(inputDbf$FLD_ZONE, FnRenameFloodZones)
+    inputDbf$SCORE <- sapply(inputDbf$FLD_ZONE, FnRenameFloodZones)
+    
     # write output
     write.dbf(inputDbf, paste0(outDataPath, stateFips, ".dbf"), max_nchar = 500)
   }
